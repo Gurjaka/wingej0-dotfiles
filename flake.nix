@@ -1,19 +1,15 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    
-    # Nix User Repository
     nur.url = "github:nix-community/NUR";
-
-    # Home Manager
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
 
     # Cosmic desktop
     nixos-cosmic = {
       url = "github:lilyinstarlight/nixos-cosmic";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    home-manager = {
+      url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -30,14 +26,14 @@
     };
   };
 
-  outputs = { nixpkgs, home-manager, ... } @ inputs: 
-  let 
-    lib = nixpkgs.lib;
-    system = "x86_64-linux";
-    pkgs = nixpkgs.legacyPackages.${system};
-  in {
+  outputs = {
+    nixpkgs,
+    home-manager,
+    ...
+  } @ inputs: {
     nixosConfigurations = {
       darter-pro = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
         specialArgs = {
           inherit inputs;
           username = "wingej0";
@@ -45,13 +41,17 @@
         };
         modules = [
           ./hosts
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              extraSpecialArgs = {
+                inherit inputs;
+              };
+              backupFileExtension = "backup";
+              users."wingej0" = import ./home.nix;
+            };
+          }
         ];
-      };
-    };
-    homeConfigurations = {
-      wingej0 = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        modules = [ ./home.nix ];
       };
     };
   };

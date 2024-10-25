@@ -1,6 +1,7 @@
 { inputs, ... }:
 {
   nixpkgs.overlays = [
+    inputs.qtile-flake.overlays.default
     (final: prev: {
       pythonPackagesOverlays =
         (prev.pythonPackagesOverlays or [])
